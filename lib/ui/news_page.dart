@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:news_app/Utils.dart';
 import 'package:news_app/model/news_article.dart';
 import 'package:news_app/provider/news_provider.dart';
-import 'package:news_app/ui/article_details_page.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NewsPage extends StatefulWidget {
   const NewsPage({Key? key}) : super(key: key);
@@ -62,10 +62,11 @@ class _NewsPageState extends State<NewsPage> {
                     : _provider.newsList[index];
                 return InkWell(
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ArticleDetailsPage(article)));
+                    launch(article.url ?? ""); // TODO: Handle null URLs
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => ArticleDetailsPage(article)));
                   },
                   child: Card(
                     margin: const EdgeInsets.all(10),
