@@ -55,8 +55,41 @@ class _NewsPageState extends State<NewsPage> {
         ),
         backgroundColor: Colors.grey.shade300,
         body: SafeArea(
-          child: ListView.builder(
-              itemBuilder: (ctx, index) {
+          child: ListView(
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(left: 16, top: 10),
+                child:
+                    Text("Filter by Publisher", style: TextStyle(fontSize: 12)),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: Wrap(
+                    spacing: 3,
+                    runSpacing: -10,
+                    children: List.generate(
+                      provider.sourceList.length,
+                      (index) => FilterChip(
+                          backgroundColor: Colors.white,
+                          selected: _provider.selectedSourceFilter
+                              .contains(provider.sourceList[index]),
+                          label: Text(provider.sourceList[index],
+                              style: const TextStyle(fontSize: 10)),
+                          onSelected: (selected) {
+                            if (selected) {
+                              _provider.addSourceToFilter(
+                                  provider.sourceList[index]);
+                            } else {
+                              _provider.removeSourceFromFilter(
+                                  provider.sourceList[index]);
+                            }
+                          }),
+                    )),
+              ),
+              ...List.generate(
+                  _provider.offlineMode
+                      ? _provider.offlineArticles.length
+                      : _provider.newsList.length, (index) {
                 NewsArticle article = _provider.offlineMode
                     ? _provider.offlineArticles[index]
                     : _provider.newsList[index];
@@ -144,10 +177,9 @@ class _NewsPageState extends State<NewsPage> {
                     ),
                   ),
                 );
-              },
-              itemCount: _provider.offlineMode
-                  ? _provider.offlineArticles.length
-                  : _provider.newsList.length),
+              })
+            ],
+          ),
         ),
       );
     });

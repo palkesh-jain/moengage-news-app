@@ -6,20 +6,30 @@ import 'package:news_app/model/news_article.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewsProvider with ChangeNotifier {
+  List<NewsArticle> wholeNewsList = [];
   List<NewsArticle> newsList = [];
   List<NewsArticle> offlineArticles = [];
+  List<String> sourceList = [];
+  List<String> selectedSourceFilter = [];
   late SharedPreferences prefs;
 
   bool offlineMode = false;
 
   Future<void> fetchNews() async {
-    newsList = await ApiManager.fetchNewsList().catchError((e) {
+    wholeNewsList = await ApiManager.fetchNewsList().catchError((e) {
       throw Exception("Error in Api, show offline articles");
     });
 
-    newsList.sort((NewsArticle a, NewsArticle b) {
+    wholeNewsList.sort((NewsArticle a, NewsArticle b) {
       return a.publishedAt?.compareTo(b.publishedAt ?? "") ?? 0;
     });
+
+    for (var element in wholeNewsList) {
+      sourceList.add(element.source?.name ?? "unknown");
+    }
+    sourceList = sourceList.toSet().toList();
+    newsList.clear();
+    newsList.addAll(wholeNewsList);
     notifyListeners();
   }
 
@@ -58,5 +68,25 @@ class NewsProvider with ChangeNotifier {
   void sortListByDate() {
     newsList = newsList.reversed.toList();
     notifyListeners();
+  }
+
+  void addSourceToFilter(String publisher) {
+    selectedSourceFilter.add(publisher);
+    updateNewsListByFilter();
+    notifyListeners();
+  }
+
+  void removeSourceFromFilter(String publisher) {
+    selectedSourceFilter.remove(publisher);
+    updateNewsListByFilter();
+    notifyListeners();
+  }
+
+  void updateNewsListByFilter() {
+    newsList.clear();
+    newsList.addAll(wholeNewsList
+        .where((element) => selectedSourceFilter.contains(element.source?.name))
+        .toList());
+    if (newsList.isEmpty) newsList.addAll(wholeNewsList);
   }
 }
